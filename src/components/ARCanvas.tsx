@@ -185,8 +185,8 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
 
   // Render a full-screen container
   return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center bg-[#0A0B0E]">
-        <div ref={containerRef} className="absolute inset-0 w-full h-full" style={{ touchAction: 'none' }} />
+    <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center bg-transparent">
+        <div ref={containerRef} className="absolute inset-0 w-full h-full bg-transparent" style={{ touchAction: 'none' }} />
         <div ref={buttonContainerRef} className="absolute inset-0 z-[100] pointer-events-none [&>button]:pointer-events-auto" />
     </div>
   );
