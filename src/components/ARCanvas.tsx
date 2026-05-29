@@ -136,10 +136,16 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
   useImperativeHandle(ref, () => ({
     placeObject: async (type: Anchor['type'], color: string) => {
       if (!sceneManagerRef.current) return;
-      const pos = sceneManagerRef.current.getReticlePosition();
+      let pos = sceneManagerRef.current.getReticlePosition();
       if (!pos) {
-        console.warn("No surface found to place object");
-        return;
+        console.warn("No surface found, placing 1.5m in front of camera as fallback");
+        const cameraPos = sceneManagerRef.current.getCameraPosition();
+        const cameraDir = sceneManagerRef.current.getCameraDirection();
+        pos = {
+          x: cameraPos.x + cameraDir.x * 1.5,
+          y: cameraPos.y + cameraDir.y * 1.5,
+          z: cameraPos.z + cameraDir.z * 1.5,
+        } as any;
       }
       
       const { anchorService } = await import('../ar/AnchorService');
