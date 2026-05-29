@@ -6,7 +6,7 @@ import { logout } from '../firebase/firebase';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminDashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, logoutCustom } = useAuth();
   const navigate = useNavigate();
   const arRef = useRef<ARCanvasRef>(null);
   const [sessionActive, setSessionActive] = useState(false);
@@ -47,7 +47,11 @@ export default function AdminDashboard() {
                 Home
               </button>
               <button 
-                onClick={async () => { await logout(); navigate('/'); }}
+                onClick={async () => { 
+                  if (logoutCustom) logoutCustom(); 
+                  else await logout(); 
+                  navigate('/'); 
+                }}
                 className="flex items-center gap-2 text-[#525866] hover:text-[#FF0055] bg-[#14161B]/80 border border-[#2D3139] px-4 py-2 rounded-sm text-[10px] font-mono tracking-widest uppercase transition-colors"
               >
                 <LogOut className="w-4 h-4" />
