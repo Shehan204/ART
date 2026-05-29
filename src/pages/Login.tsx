@@ -5,8 +5,10 @@ import { loginWithGoogle } from '../firebase/firebase';
 import { Shield } from 'lucide-react';
 
 export default function Login() {
-  const { user } = useAuth();
+  const { user, loginCustom } = useAuth();
   const navigate = useNavigate();
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   React.useEffect(() => {
     if (user) {
@@ -14,13 +16,12 @@ export default function Login() {
     }
   }, [user, navigate]);
 
-  const handleLogin = async () => {
-    try {
-      await loginWithGoogle();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginCustom && await loginCustom(username, password)) {
       navigate('/admin');
-    } catch (error) {
-      console.error(error);
-      alert('Login failed');
+    } else {
+      alert('Invalid credentials');
     }
   };
 
@@ -31,12 +32,30 @@ export default function Login() {
         <h1 className="text-xl font-bold text-[#E0E2E5] mb-2 text-center uppercase tracking-widest">Admin Login</h1>
         <p className="text-[10px] text-[#8E9299] mb-8 text-center font-mono uppercase">AUTHENTICATE TO MANAGE AR OBJECTS IN THE SHARED WORLD.</p>
         
-        <button 
-          onClick={handleLogin}
-          className="w-full py-4 px-4 bg-[#0A0B0E] border border-[#2D3139] hover:border-[#00F0FF] text-[#00F0FF] text-xs font-bold tracking-widest uppercase rounded-sm transition-colors flex items-center justify-center gap-2"
-        >
-          Sign in with Google
-        </button>
+        <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
+          <input 
+            type="text" 
+            placeholder="USERNAME" 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full bg-[#0A0B0E] border border-[#2D3139] text-[#E0E2E5] p-3 rounded-sm text-xs font-mono uppercase focus:border-[#00F0FF] outline-none"
+            required
+          />
+          <input 
+            type="password" 
+            placeholder="PASSWORD" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full bg-[#0A0B0E] border border-[#2D3139] text-[#E0E2E5] p-3 rounded-sm text-xs font-mono focus:border-[#00F0FF] outline-none"
+            required
+          />
+          <button 
+            type="submit"
+            className="w-full mt-2 py-4 px-4 bg-[#0A0B0E] border border-[#2D3139] hover:border-[#00F0FF] text-[#00F0FF] text-xs font-bold tracking-widest uppercase rounded-sm transition-colors flex items-center justify-center gap-2"
+          >
+            Sign in
+          </button>
+        </form>
         
         <button 
           onClick={() => navigate('/')}
