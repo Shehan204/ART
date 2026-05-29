@@ -20,10 +20,10 @@ export default function AdminDashboard() {
     }
   }, [user, loading, navigate]);
 
-  if (loading || !user) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>;
+  if (loading || !user) return <div className="min-h-screen bg-[#0A0B0E] flex items-center justify-center text-white">Loading...</div>;
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
+    <div className={`relative w-full h-screen overflow-hidden ${sessionActive ? 'bg-transparent' : 'bg-[#0A0B0E]'}`}>
       <ARCanvas 
         ref={arRef} 
         isAdmin={true} 
