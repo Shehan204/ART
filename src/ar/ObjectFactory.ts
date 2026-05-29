@@ -14,18 +14,32 @@ export class ObjectFactory {
       metalness: 0.3
     });
 
+    const createSGeometry = () => {
+      const shape = new THREE.Shape();
+      shape.moveTo(0.04, 0.05);
+      shape.lineTo(-0.04, 0.05);
+      shape.lineTo(-0.04, 0.01);
+      shape.lineTo(0.02, 0.01);
+      shape.lineTo(0.02, -0.01);
+      shape.lineTo(-0.04, -0.01);
+      shape.lineTo(-0.04, -0.05);
+      shape.lineTo(0.04, -0.05);
+      shape.lineTo(0.04, -0.01);
+      shape.lineTo(-0.02, -0.01);
+      shape.lineTo(-0.02, 0.01);
+      shape.lineTo(0.04, 0.01);
+      shape.lineTo(0.04, 0.05);
+      const geom = new THREE.ExtrudeGeometry(shape, { depth: 0.02, bevelEnabled: true, bevelThickness: 0.002, bevelSize: 0.002, bevelSegments: 1 });
+      geom.center();
+      return geom;
+    };
+
     switch (anchor.type) {
       case 'cube':
-        geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-        break;
       case 'sphere':
-        geometry = new THREE.SphereGeometry(0.05, 32, 32);
-        break;
       case 'cylinder':
-        geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 32);
-        break;
       default:
-        geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        geometry = createSGeometry();
         break;
     }
 
