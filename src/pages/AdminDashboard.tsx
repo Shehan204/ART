@@ -62,11 +62,11 @@ export default function AdminDashboard() {
       )}
 
       {sessionActive && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-10 flex flex-col gap-4 pointer-events-none">
+        <div className="absolute inset-0 z-[9999] pointer-events-none flex flex-col justify-end p-4 pb-8">
           {/* Controls overlay */}
-          <div className="mx-auto bg-[#14161B]/90 backdrop-blur-md rounded-sm p-4 flex gap-4 pointer-events-auto border border-[#2D3139] shadow-2xl">
+          <div className="mx-auto bg-[#14161B]/90 backdrop-blur-md rounded-sm p-4 flex gap-4 pointer-events-auto border border-[#2D3139] shadow-2xl mb-4">
             <div className="flex flex-col gap-2 border-r border-[#2D3139] pr-4">
-              <label className="text-[9px] font-bold text-[#8E9299] uppercase tracking-[0.2em]">Shape</label>
+              <label className="text-[9px] font-bold text-[#8E9299] uppercase tracking-[0.2em] mb-1">Shape</label>
               <div className="flex gap-2">
                 {['cube', 'sphere', 'cylinder'].map((t) => (
                   <button
@@ -74,13 +74,13 @@ export default function AdminDashboard() {
                     onClick={() => setSelectedType(t as any)}
                     className={`px-3 py-2 rounded-sm text-[10px] font-mono uppercase tracking-widest transition-colors border ${selectedType === t ? 'bg-[#00F0FF]/10 text-[#00F0FF] border-[#00F0FF]' : 'bg-[#1C1F26] text-[#525866] border-[#2D3139] hover:bg-[#1C1F26]/80 hover:text-[#8E9299]'}`}
                   >
-                    {t}
+                    {t === 'cube' ? 'S-Shape' : t}
                   </button>
                 ))}
               </div>
             </div>
             
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1 justify-center">
               <label className="text-[9px] font-bold text-[#8E9299] uppercase tracking-[0.2em]">Color</label>
               <input 
                 type="color" 
@@ -93,7 +93,9 @@ export default function AdminDashboard() {
 
           <div className="flex justify-center gap-4 pointer-events-auto">
             <button 
-              onClick={() => arRef.current?.placeObject(selectedType, selectedColor)}
+              onClick={() => {
+                arRef.current?.placeObject(selectedType, selectedColor);
+              }}
               className="flex items-center gap-2 px-8 py-4 bg-[#00F0FF] text-[#0A0B0E] rounded-sm font-bold shadow-[0_0_20px_rgba(0,240,255,0.2)] text-[10px] uppercase tracking-widest hover:bg-[#00F0FF]/90 transition"
             >
               <Plus className="w-4 h-4" />
