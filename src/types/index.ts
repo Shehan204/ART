@@ -6,6 +6,7 @@ export interface Anchor {
   scale: { x: number; y: number; z: number };
   color: string;
   anchorType: 'local' | 'geospatial' | 'vps';
+  location?: { lat: number; lng: number };
   createdBy?: string;
   createdAt: number;
   visible: boolean;
