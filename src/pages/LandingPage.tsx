@@ -54,9 +54,12 @@ export default function LandingPage() {
         </div>
 
         {arSupported === false && (
-          <p className="mt-8 text-[10px] font-mono tracking-widest uppercase text-[#FF0055] bg-[#FF0055]/10 py-2 px-4 rounded border border-[#FF0055]/30 flex items-center gap-2 z-10">
-            WARNING: YOUR DEVICE OR BROWSER DOES NOT SUPPORT WEBXR AR.
-          </p>
+          <div className="mt-8 flex flex-col items-center gap-4 z-10 max-w-md">
+            <p className="text-[10px] sm:text-xs font-mono tracking-widest uppercase text-[#FF0055] bg-[#FF0055]/10 py-3 px-4 rounded border border-[#FF0055]/30 text-center">
+              WARNING: YOUR BROWSER DOES NOT SUPPORT WEBXR AR.<br /><br />
+              <span className="text-[#E0E2E5]">IPHONE/IOS USERS: Apple Safari does not support WebXR yet. Please download the "WebXR Viewer" app by Mozilla from the App Store and open this link inside it.</span>
+            </p>
+          </div>
         )}
       </main>
     </div>
