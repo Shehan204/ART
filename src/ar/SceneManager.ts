@@ -100,12 +100,19 @@ export class SceneManager {
   }
 
   public getCameraPosition(): THREE.Vector3 {
+    if (this.renderer.xr.enabled && this.renderer.xr.isPresenting) {
+      return this.renderer.xr.getCamera().position.clone();
+    }
     return this.camera.position.clone();
   }
   
   public getCameraDirection(): THREE.Vector3 {
     const dir = new THREE.Vector3();
-    this.camera.getWorldDirection(dir);
+    if (this.renderer.xr.enabled && this.renderer.xr.isPresenting) {
+      this.renderer.xr.getCamera().getWorldDirection(dir);
+    } else {
+      this.camera.getWorldDirection(dir);
+    }
     return dir;
   }
 
