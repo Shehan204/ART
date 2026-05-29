@@ -8,7 +8,7 @@ export default function ARViewer() {
   const [sessionActive, setSessionActive] = useState(false);
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
+    <div className={`relative w-full h-screen overflow-hidden ${sessionActive ? 'bg-transparent' : 'bg-[#0A0B0E]'}`}>
       <ARCanvas 
         isAdmin={false} 
         onSessionStart={() => setSessionActive(true)}
