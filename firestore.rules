@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Basic rules for Knight Quest AR MVP
+    // Better practice: restrict writes to actual authenticated admin accounts using custom claims or an admins collection
+    match /anchors/{document=**} {
+      // Anyone can read anchors
+      allow read: if true;
+      
+      // For MVP, anyone authenticated. In production, this should check for admin role.
+      allow create, update, delete: if request.auth != null;
+    }
+    
+    // Protect users collection (if added later)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
