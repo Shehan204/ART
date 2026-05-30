@@ -22,18 +22,8 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const sceneManagerRef = useRef<SceneManager | null>(null);
   const [anchors, setAnchors] = useState<Anchor[]>([]);
-  const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null);
   
   useEffect(() => {
-    // Fetch initial GPS location for World tracking approximation
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.warn("GPS tracking disabled/failed", err),
-        { enableHighAccuracy: true }
-      );
-    }
-
     if (!containerRef.current || !buttonContainerRef.current) return;
     
     // Initialize Three.js Scene
@@ -43,7 +33,7 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
     // Create AR Button with DOM Overlay enabled so UI is visible on iOS/WebXR Viewer
     const button = ARButton.createButton(sceneManager.renderer, { 
       requiredFeatures: ['hit-test'],
-      optionalFeatures: ['dom-overlay'],
+      optionalFeatures: ['dom-overlay', 'local-floor'],
       // We set root to document body so entire React tree is overlayed
       domOverlay: { root: document.body }
     });
@@ -66,7 +56,6 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
     button.style.transform = 'translateX(-50%)';
     buttonContainerRef.current.appendChild(button);
     
-    // Setup render loop
     const renderLoop = (timestamp: number, frame: XRFrame) => {
       sceneManager.render(timestamp, frame);
     };
@@ -74,6 +63,42 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
     if (sceneManager.renderer.xr.enabled) {
       sceneManager.renderer.setAnimationLoop(renderLoop);
     }
+    
+    // Tap to select/delete
+    const onSelect = () => {
+      if (!isAdmin) return;
+      import('three').then((THREE) => {
+        const controller = sceneManager.renderer.xr.getController(0);
+        const tempMatrix = new THREE.Matrix4();
+        tempMatrix.identity().extractRotation(controller.matrixWorld);
+        
+        const raycaster = new THREE.Raycaster();
+        raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+        raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+        
+        const intersects = raycaster.intersectObjects(sceneManager.scene.children, true);
+        if (intersects.length > 0) {
+          const findGroup = (obj: THREE.Object3D): THREE.Group | null => {
+            if (obj.userData?.anchor) return obj as THREE.Group;
+            if (obj.parent) return findGroup(obj.parent);
+            return null;
+          };
+          
+          for (let i = 0; i < intersects.length; i++) {
+             const group = findGroup(intersects[i].object);
+             if (group && group.uuid) {
+                 // Automatically delete tapped object if admin
+                 firestoreService.deleteAnchor(group.uuid).catch(console.error);
+                 return;
+             }
+          }
+        }
+      });
+    };
+
+    const controller = sceneManager.renderer.xr.getController(0);
+    controller.addEventListener('select', onSelect);
+    sceneManager.scene.add(controller);
     
     if (onReady) onReady();
     
@@ -102,35 +127,13 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
   }, []);
 
   useEffect(() => {
-    // Sync anchors to scene whenever data changes, applying GPS offset
+    // Sync anchors to scene whenever data changes
     if (sceneManagerRef.current && anchors.length > 0) {
-      let processAnchors = [...anchors];
-      
-      // If we have GPS, calculate offsets so objects show up relative to your real world position
-      if (currentLocation) {
-        processAnchors = anchors.map(anchor => {
-          if (!anchor.location) return anchor;
-          // Calculate distance in meters using rough coordinates
-          // 1 deg Lat ~= 111,320 meters
-          // 1 deg Lng ~= 111,320 * cos(lat) meters
-          const dz = (anchor.location.lat - currentLocation.lat) * 111320;
-          const dx = (anchor.location.lng - currentLocation.lng) * 111320 * Math.cos(currentLocation.lat * Math.PI / 180);
-          
-          return {
-            ...anchor,
-            position: {
-              ...anchor.position,
-              // Apply offset. Note: Assuming compass alignment for MVP (X is East, Z is South)
-              x: anchor.position.x + dx,
-              z: anchor.position.z + dz
-            }
-          };
-        });
-      }
-      
-      sceneManagerRef.current.syncObjects(processAnchors);
+      sceneManagerRef.current.syncObjects(anchors);
+    } else if (sceneManagerRef.current && anchors.length === 0) {
+      sceneManagerRef.current.syncObjects([]);
     }
-  }, [anchors, currentLocation]);
+  }, [anchors]);
 
   // Expose methods for Admin UI
   useImperativeHandle(ref, () => ({
@@ -151,11 +154,6 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
       const { anchorService } = await import('../ar/AnchorService');
       const anchor = anchorService.createLocalAnchor(type, { x: pos.x, y: pos.y, z: pos.z }, color);
       
-      // Attach current GPS to the anchor to anchor it in the real world
-      if (currentLocation) {
-        anchor.location = currentLocation;
-      }
-
       try {
         await firestoreService.saveAnchor(anchor);
       } catch (e) {
@@ -165,9 +163,9 @@ export const ARCanvas = forwardRef<ARCanvasRef, ARCanvasProps>(({ isAdmin, onSes
     deleteLookedAtObject: () => {
        if (!sceneManagerRef.current) return;
        import('three').then(THREE => {
-          const camera = sceneManagerRef.current!.camera;
-          const raycaster = new THREE.Raycaster();
-          raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+          const pos = sceneManagerRef.current!.getCameraPosition();
+          const dir = sceneManagerRef.current!.getCameraDirection();
+          const raycaster = new THREE.Raycaster(pos, dir.normalize());
           
           const intersects = raycaster.intersectObjects(sceneManagerRef.current!.scene.children, true);
           if (intersects.length > 0) {
