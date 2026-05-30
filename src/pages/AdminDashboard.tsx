@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none p-4 pb-32">
           <h1 className="text-4xl font-bold text-[#E0E2E5] mb-2 uppercase tracking-widest drop-shadow-md">Admin Dashboard</h1>
           <p className="text-[10px] text-[#8E9299] font-mono tracking-widest uppercase mb-8 text-center max-w-md drop-shadow mt-4">
-            ENTER AR MODE USING THE BUTTON BELOW TO PLACE, MODIFY, AND DELETE WORLD ANCHORS THAT ALL USERS WILL SEE.
+            ENTER AR MODE TO PLACE OBJECTS. YOU CAN DRAG THE CROSSHAIR OR TAP ON PLACED OBJECTS TO DELETE THEM.
           </p>
           
           <div className="flex gap-4 pointer-events-auto">
@@ -57,6 +57,15 @@ export default function AdminDashboard() {
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </button>
+          </div>
+        </div>
+      )}
+
+      {sessionActive && (
+        <div className="absolute inset-0 z-[9998] pointer-events-none flex items-center justify-center">
+          {/* Crosshair for looking at objects */}
+          <div className="w-6 h-6 border-2 border-white/50 rounded-full flex items-center justify-center backdrop-blur-sm">
+            <div className="w-1 h-1 bg-[#FF0055] rounded-full"></div>
           </div>
         </div>
       )}
@@ -103,9 +112,10 @@ export default function AdminDashboard() {
             </button>
             <button 
               onClick={() => arRef.current?.deleteLookedAtObject()}
-              className="flex items-center justify-center w-12 h-12 bg-[#FF0055] text-white rounded-sm shadow-[0_0_20px_rgba(255,0,85,0.2)] hover:bg-[#FF0055]/90 transition border border-[#FF0055]"
+              className="flex items-center justify-center gap-2 px-4 h-12 bg-[#FF0055] text-white rounded-sm shadow-[0_0_20px_rgba(255,0,85,0.2)] hover:bg-[#FF0055]/90 transition border border-[#FF0055]"
             >
               <Trash2 className="w-5 h-5" />
+              <span className="text-[10px] font-bold tracking-widest uppercase hidden sm:block">Delete Target</span>
             </button>
           </div>
         </div>
